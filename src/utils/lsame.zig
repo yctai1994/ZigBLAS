@@ -1,0 +1,1 @@
+fn lsame() void {}
