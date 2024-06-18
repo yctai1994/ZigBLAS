@@ -57,15 +57,14 @@ pub fn dsyrk(
     }
 
     // Start the operations.
+    var temp: T = undefined;
 
     switch (tran) {
         'N', 'n' => {
-
-            // Form  C = alpha⋅A⋅Aᵀ + beta⋅C.
-
-            var temp: T = undefined;
-
             switch (uplo) {
+
+                // Form  C = alpha⋅A⋅Aᵀ + beta⋅C.
+
                 'U', 'u' => {
                     for (A, C, 0..) |A_i, C_i, jmin| {
                         for (A[jmin..], C_i[jmin..]) |A_j, *C_ij| {
@@ -106,8 +105,6 @@ pub fn dsyrk(
         'T', 't' => {
 
             // Form  C := alpha⋅Aᵀ⋅A + beta⋅C.
-
-            var temp: T = undefined;
 
             switch (uplo) {
                 'U', 'u' => {
@@ -160,6 +157,7 @@ test "dsyrk: alpha == 0" {
     const C: [][]i32 = try ArrI32.matrix(4, 4);
     defer ArrI32.free(C);
 
+    const alpha: comptime_int = 0;
     {
         const Us: [3][4][4]i32 = .{
             .{ .{ 0, 0, 0, 0 }, .{ 2, 0, 0, 0 }, .{ 1, 0, 0, 0 }, .{ 0, 3, 2, 0 } }, // beta = 0
@@ -172,7 +170,7 @@ test "dsyrk: alpha == 0" {
             inline for (.{ 2, 1, 0, 3 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 3, 2 }, C[2]) |v, *p| p.* = v;
             inline for (.{ 0, 3, 2, 1 }, C[3]) |v, *p| p.* = v;
-            dsyrk(i32, 'U', 'N', 4, 3, 0, A, 4, beta, C, 4);
+            dsyrk(i32, 'U', 'N', 4, 3, alpha, A, 4, beta, C, 4);
             for (U, C) |rowU, rowC| try testing.expect(mem.eql(i32, &rowU, rowC));
         }
     }
@@ -192,6 +190,7 @@ test "dsyrk: alpha == 0" {
             for (L, C) |rowL, rowC| try testing.expect(mem.eql(i32, &rowL, rowC));
         }
     }
+    // return error.SkipZigTest;
 }
 
 test "dsyrk('U' / 'L', 'N'), alpha = 3" {
@@ -208,6 +207,7 @@ test "dsyrk('U' / 'L', 'N'), alpha = 3" {
     const C: [][]i32 = try ArrI32.matrix(4, 4);
     defer ArrI32.free(C);
 
+    const alpha: comptime_int = 3;
     {
         const Us: [3][4][4]i32 = .{
             .{ .{ 105, 27, 21, 54 }, .{ 2, 39, 18, 6 }, .{ 1, 0, 15, 9 }, .{ 0, 3, 2, 30 } }, // beta = 0
@@ -220,11 +220,10 @@ test "dsyrk('U' / 'L', 'N'), alpha = 3" {
             inline for (.{ 2, 1, 0, 3 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 3, 2 }, C[2]) |v, *p| p.* = v;
             inline for (.{ 0, 3, 2, 1 }, C[3]) |v, *p| p.* = v;
-            dsyrk(i32, 'U', 'N', 4, 3, 3, A, 4, beta, C, 4);
+            dsyrk(i32, 'U', 'N', 4, 3, alpha, A, 4, beta, C, 4);
             for (U, C) |rowU, rowC| try testing.expect(mem.eql(i32, &rowU, rowC));
         }
     }
-
     {
         const Ls: [3][4][4]i32 = .{
             .{ .{ 105, 2, 1, 0 }, .{ 27, 39, 0, 3 }, .{ 21, 18, 15, 2 }, .{ 54, 6, 9, 30 } }, // beta = 0
@@ -237,10 +236,11 @@ test "dsyrk('U' / 'L', 'N'), alpha = 3" {
             inline for (.{ 2, 1, 0, 3 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 3, 2 }, C[2]) |v, *p| p.* = v;
             inline for (.{ 0, 3, 2, 1 }, C[3]) |v, *p| p.* = v;
-            dsyrk(i32, 'L', 'N', 4, 3, 3, A, 4, beta, C, 4);
+            dsyrk(i32, 'L', 'N', 4, 3, alpha, A, 4, beta, C, 4);
             for (L, C) |rowL, rowC| try testing.expect(mem.eql(i32, &rowL, rowC));
         }
     }
+    // return error.SkipZigTest;
 }
 
 test "dsyrk('U' / 'L', 'T'), alpha = 3" {
@@ -257,6 +257,7 @@ test "dsyrk('U' / 'L', 'T'), alpha = 3" {
     const C: [][]i32 = try ArrI32.matrix(3, 3);
     defer ArrI32.free(C);
 
+    const alpha: comptime_int = 3;
     {
         const Us: [3][3][3]i32 = .{
             .{ .{ 42, 21, 27 }, .{ 1, 105, 54 }, .{ 0, 2, 42 } }, // beta = 0
@@ -268,11 +269,10 @@ test "dsyrk('U' / 'L', 'T'), alpha = 3" {
             inline for (.{ 2, 1, 0 }, C[0]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 2 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 0, 2, 1 }, C[2]) |v, *p| p.* = v;
-            dsyrk(i32, 'U', 'T', 3, 3, 3, A, 4, beta, C, 3);
+            dsyrk(i32, 'U', 'T', 3, 3, alpha, A, 4, beta, C, 3);
             for (U, C) |rowU, rowC| try testing.expect(mem.eql(i32, &rowU, rowC));
         }
     }
-
     {
         const Ls: [3][3][3]i32 = .{
             .{ .{ 42, 1, 0 }, .{ 21, 105, 2 }, .{ 27, 54, 42 } }, // beta = 0
@@ -284,10 +284,11 @@ test "dsyrk('U' / 'L', 'T'), alpha = 3" {
             inline for (.{ 2, 1, 0 }, C[0]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 2 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 0, 2, 1 }, C[2]) |v, *p| p.* = v;
-            dsyrk(i32, 'L', 'T', 3, 3, 3, A, 4, beta, C, 3);
+            dsyrk(i32, 'L', 'T', 3, 3, alpha, A, 4, beta, C, 3);
             for (L, C) |rowL, rowC| try testing.expect(mem.eql(i32, &rowL, rowC));
         }
     }
+    // return error.SkipZigTest;
 }
 
 const std = @import("std");

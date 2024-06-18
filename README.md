@@ -10,7 +10,7 @@
 
 #### 1.3 Level3
 
-- [ ] dgemm
+- [x] dgemm
 - [x] dsyrk
 - [ ] dtrsm
 
