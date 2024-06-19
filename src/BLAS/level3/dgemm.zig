@@ -144,20 +144,20 @@ pub fn dgemm(
 }
 
 test "dgemm: alpha == 0" {
-    const ArrI32 = Array(i32){ .allocator = testing.allocator };
+    const ArrF32 = Array(f32){ .allocator = testing.allocator };
 
-    const A: [][]i32 = try ArrI32.matrix(4, 3);
-    defer ArrI32.free(A);
+    const A: [][]f32 = try ArrF32.matrix(4, 3);
+    defer ArrF32.free(A);
 
-    const B: [][]i32 = try ArrI32.matrix(3, 4);
-    defer ArrI32.free(B);
+    const B: [][]f32 = try ArrF32.matrix(3, 4);
+    defer ArrF32.free(B);
 
-    const C: [][]i32 = try ArrI32.matrix(4, 4);
-    defer ArrI32.free(C);
+    const C: [][]f32 = try ArrF32.matrix(4, 4);
+    defer ArrF32.free(C);
 
     const alpha: comptime_int = 0;
     {
-        const Rs: [3][4][4]i32 = .{ // references
+        const Rs: [3][4][4]f32 = .{ // references
             .{ .{ 0, 0, 0, 0 }, .{ 0, 0, 0, 0 }, .{ 0, 0, 0, 0 }, .{ 0, 0, 0, 0 } }, // beta = 0
             .{ .{ 3, 2, 1, 0 }, .{ 2, 1, 0, 3 }, .{ 1, 0, 3, 2 }, .{ 0, 3, 2, 1 } }, // beta = 1
             .{ .{ 6, 4, 2, 0 }, .{ 4, 2, 0, 6 }, .{ 2, 0, 6, 4 }, .{ 0, 6, 4, 2 } }, // beta = 2
@@ -168,8 +168,8 @@ test "dgemm: alpha == 0" {
             inline for (.{ 2, 1, 0, 3 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 3, 2 }, C[2]) |v, *p| p.* = v;
             inline for (.{ 0, 3, 2, 1 }, C[3]) |v, *p| p.* = v;
-            dgemm(i32, 'N', 'N', 4, 4, 3, alpha, A, 4, B, 3, beta, C, 4);
-            for (R, C) |rowR, rowC| try testing.expect(mem.eql(i32, &rowR, rowC));
+            dgemm(f32, 'N', 'N', 4, 4, 3, alpha, A, 4, B, 3, beta, C, 4);
+            for (R, C) |rowR, rowC| try testing.expect(mem.eql(f32, &rowR, rowC));
         }
     }
 }
@@ -212,6 +212,7 @@ test "dgemm('N', 'N'), alpha = 3" {
             for (R, C) |rowR, rowC| try testing.expect(mem.eql(i32, &rowR, rowC));
         }
     }
+    return error.SkipZigTest;
 }
 
 test "dgemm('T', 'N'), alpha = 3" {
@@ -251,6 +252,7 @@ test "dgemm('T', 'N'), alpha = 3" {
             for (R, C) |rowR, rowC| try testing.expect(mem.eql(i32, &rowR, rowC));
         }
     }
+    return error.SkipZigTest;
 }
 
 test "dgemm('N', 'T'), alpha = 3" {
@@ -292,6 +294,7 @@ test "dgemm('N', 'T'), alpha = 3" {
             for (R, C) |rowR, rowC| try testing.expect(mem.eql(i32, &rowR, rowC));
         }
     }
+    return error.SkipZigTest;
 }
 
 test "dgemm('T', 'T'), alpha = 3" {
@@ -332,6 +335,7 @@ test "dgemm('T', 'T'), alpha = 3" {
             for (R, C) |rowR, rowC| try testing.expect(mem.eql(i32, &rowR, rowC));
         }
     }
+    return error.SkipZigTest;
 }
 
 const std = @import("std");

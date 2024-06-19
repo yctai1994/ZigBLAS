@@ -1,7 +1,7 @@
 pub fn dsyrk(
     comptime T: type,
     comptime uplo: u8,
-    comptime tran: u8,
+    comptime trans: u8,
     n: usize,
     k: usize,
     alpha: T,
@@ -14,7 +14,7 @@ pub fn dsyrk(
     const zero: T = 0;
     const one: T = 1;
 
-    switch (tran) {
+    switch (trans) {
         'N', 'n' => if (lda < @max(1, n)) unreachable, // nrowa = n
         'T', 't' => if (lda < @max(1, k)) unreachable, // nrowa = k
         else => @compileError(""),
@@ -59,7 +59,7 @@ pub fn dsyrk(
     // Start the operations.
     var temp: T = undefined;
 
-    switch (tran) {
+    switch (trans) {
         'N', 'n' => {
             switch (uplo) {
 
@@ -149,17 +149,17 @@ pub fn dsyrk(
 }
 
 test "dsyrk: alpha == 0" {
-    const ArrI32 = Array(i32){ .allocator = testing.allocator };
+    const ArrF32 = Array(f32){ .allocator = testing.allocator };
 
-    const A: [][]i32 = try ArrI32.matrix(4, 3);
-    defer ArrI32.free(A);
+    const A: [][]f32 = try ArrF32.matrix(4, 3);
+    defer ArrF32.free(A);
 
-    const C: [][]i32 = try ArrI32.matrix(4, 4);
-    defer ArrI32.free(C);
+    const C: [][]f32 = try ArrF32.matrix(4, 4);
+    defer ArrF32.free(C);
 
     const alpha: comptime_int = 0;
     {
-        const Us: [3][4][4]i32 = .{
+        const Us: [3][4][4]f32 = .{
             .{ .{ 0, 0, 0, 0 }, .{ 2, 0, 0, 0 }, .{ 1, 0, 0, 0 }, .{ 0, 3, 2, 0 } }, // beta = 0
             .{ .{ 3, 2, 1, 0 }, .{ 2, 1, 0, 3 }, .{ 1, 0, 3, 2 }, .{ 0, 3, 2, 1 } }, // beta = 1
             .{ .{ 6, 4, 2, 0 }, .{ 2, 2, 0, 6 }, .{ 1, 0, 6, 4 }, .{ 0, 3, 2, 2 } }, // beta = 2
@@ -170,12 +170,12 @@ test "dsyrk: alpha == 0" {
             inline for (.{ 2, 1, 0, 3 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 3, 2 }, C[2]) |v, *p| p.* = v;
             inline for (.{ 0, 3, 2, 1 }, C[3]) |v, *p| p.* = v;
-            dsyrk(i32, 'U', 'N', 4, 3, alpha, A, 4, beta, C, 4);
-            for (U, C) |rowU, rowC| try testing.expect(mem.eql(i32, &rowU, rowC));
+            dsyrk(f32, 'U', 'N', 4, 3, alpha, A, 4, beta, C, 4);
+            for (U, C) |rowU, rowC| try testing.expect(mem.eql(f32, &rowU, rowC));
         }
     }
     {
-        const Ls: [3][4][4]i32 = .{
+        const Ls: [3][4][4]f32 = .{
             .{ .{ 0, 2, 1, 0 }, .{ 0, 0, 0, 3 }, .{ 0, 0, 0, 2 }, .{ 0, 0, 0, 0 } }, // beta = 0
             .{ .{ 3, 2, 1, 0 }, .{ 2, 1, 0, 3 }, .{ 1, 0, 3, 2 }, .{ 0, 3, 2, 1 } }, // beta = 1
             .{ .{ 6, 2, 1, 0 }, .{ 4, 2, 0, 3 }, .{ 2, 0, 6, 2 }, .{ 0, 6, 4, 2 } }, // beta = 2
@@ -186,8 +186,8 @@ test "dsyrk: alpha == 0" {
             inline for (.{ 2, 1, 0, 3 }, C[1]) |v, *p| p.* = v;
             inline for (.{ 1, 0, 3, 2 }, C[2]) |v, *p| p.* = v;
             inline for (.{ 0, 3, 2, 1 }, C[3]) |v, *p| p.* = v;
-            dsyrk(i32, 'L', 'N', 4, 3, 0, A, 4, beta, C, 4);
-            for (L, C) |rowL, rowC| try testing.expect(mem.eql(i32, &rowL, rowC));
+            dsyrk(f32, 'L', 'N', 4, 3, 0, A, 4, beta, C, 4);
+            for (L, C) |rowL, rowC| try testing.expect(mem.eql(f32, &rowL, rowC));
         }
     }
     // return error.SkipZigTest;
@@ -240,7 +240,7 @@ test "dsyrk('U' / 'L', 'N'), alpha = 3" {
             for (L, C) |rowL, rowC| try testing.expect(mem.eql(i32, &rowL, rowC));
         }
     }
-    // return error.SkipZigTest;
+    return error.SkipZigTest;
 }
 
 test "dsyrk('U' / 'L', 'T'), alpha = 3" {
@@ -288,7 +288,7 @@ test "dsyrk('U' / 'L', 'T'), alpha = 3" {
             for (L, C) |rowL, rowC| try testing.expect(mem.eql(i32, &rowL, rowC));
         }
     }
-    // return error.SkipZigTest;
+    return error.SkipZigTest;
 }
 
 const std = @import("std");
