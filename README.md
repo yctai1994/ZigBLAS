@@ -9,6 +9,7 @@
 #### 1.2 Level2
 
 - [ ] dtrmv
+- [ ] dtrsv
 
 #### 1.3 Level3
 
