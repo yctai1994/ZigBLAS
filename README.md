@@ -8,6 +8,8 @@
 
 #### 1.2 Level2
 
+- [ ] dtrmv
+
 #### 1.3 Level3
 
 - [x] dgemm
