@@ -21,68 +21,69 @@ pub fn dtrsv(
 
     // Start the operations. In this version the elements of A are
     // accessed sequentially with one pass through A.
-    var temp: T = undefined;
+    var t: T = undefined;
 
     switch (trans) {
-        'N', 'n' => {
+        'N' => {
 
             // Form  x := (A)⁻¹⋅x,
             // with A(LDA ≥ n, n), x(n)
 
             switch (uplo) {
-                'U', 'u' => {
+                'U' => {
+                    var i: usize = n - 1;
+                    var j: usize = undefined;
                     if (kx == 1) {
-                        var ix: usize = n - 1; // x.len - 1
-                        var jx: usize = undefined;
-
-                        while (true) : (ix -= 1) {
-                            temp = x[ix]; // ix = 0
-                            jx = ix + 1; // jx = 1
-                            for (A[ix][jx..], x[jx..]) |A_ij, x_j| temp -= A_ij * x_j;
+                        while (true) : (i -= 1) {
+                            t = x[i];
+                            j = i + 1;
+                            for (A[i][j..n], x[j..n]) |A_ij, x_j| t -= A_ij * x_j;
                             switch (diag) {
-                                'U', 'u' => x[ix] = temp,
-                                'N', 'n' => x[ix] = temp / A[ix][ix],
-                                else => @compileError(""),
+                                'U' => x[i] = t,
+                                'N' => x[i] = t / A[i][i],
                             }
-                            if (ix == 0) break;
+                            if (i == 0) break;
                         }
                     } else unreachable;
                 },
-                'L', 'l' => {
+                'L' => {
                     if (kx == 1) {
-                        for (A, x, 0..) |A_i, *x_i, ix| { // ix = i = 2
-                            temp = x_i.*;
-                            for (A_i[0..ix], x[0..ix]) |A_ij, x_j| temp -= A_ij * x_j;
-                            switch (diag) {
-                                'U', 'u' => x_i.* = temp,
-                                'N', 'n' => x_i.* = temp / A_i[ix],
-                                else => @compileError(""),
+                        for (A, x, 0..) |A_i, *x_i, i| {
+                            t = x_i.*;
+                            for (A_i[0..i], x[0..i]) |A_ij, x_j| {
+                                t -= A_ij * x_j;
                             }
+                            x_i.* = t / A_i[i];
                         }
                     } else unreachable;
                 },
                 else => @compileError(""),
             }
         },
-        'T', 't' => {
+        'T' => {
 
             // Form  x := (Aᵀ)⁻¹⋅x.
 
             switch (uplo) {
-                'U', 'u' => {
+                'U' => {
                     if (kx == 1) {
-                        //
+                        for (A, x, 1..) |A_i, *x_i, ip1| {
+                            switch (diag) {
+                                'U' => {},
+                                'N' => x_i.* /= A_i[ip1 - 1],
+                                else => @compileError(""),
+                            }
+                            for (A_i[ip1..n], x[ip1..n]) |A_ij, *x_j| {
+                                x_j.* -= A_ij * x_i.*;
+                            }
+                        }
                     } else unreachable;
                 },
-                'L', 'l' => {
-                    if (kx == 1) {
-                        //
-                    } else unreachable;
-                },
+                'L' => @compileError("x := (Lᵀ)⁻¹⋅x doesn't support yet."),
                 else => @compileError(""),
             }
         },
     }
 
-    _ = .{ uplo, trans, diag, A, lda, x, incx, kx };
+    _ = .{ diag, A, lda, x, incx, kx };
 }
